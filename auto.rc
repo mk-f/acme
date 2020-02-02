@@ -1,0 +1,45 @@
+#!/usr/bin/env rc
+
+fn msg{
+	echo $* | 9p write acme/cons
+}
+
+fn read_shebang{
+	echo -n 0 | 9p write acme/$1/addr
+	9p read acme/$1/data
+}
+
+fn detect_python{
+	id=$1
+	file=$2
+
+	if(~ `{basename $file} *.py)
+		msg $id^': python-file detected (by file-extension)'
+	if not if(~ `{read_shebang $id} *python*)
+		msg $id^': python-file detected (by shebang)'
+	if not
+		status=nopython
+}
+
+fn indent_spaces{
+	if (echo spacesindent | 9p write acme/$1/ctl) {
+		echo -n Spaces on | 9p write acme/$1/tag
+		msg $id^': set ''Spaces on'''
+	}
+	if not
+		msg $id^': Spaces-Patch missing'
+}
+
+9p read acme/log | while (line=`{read}){
+	id=$line(1)
+	action=$line(2)
+	file=$line(3)
+
+	echo $line
+	switch($action) {
+	case new
+		if (detect_python $id $file) {
+			indent_spaces $id
+		}
+	}
+}

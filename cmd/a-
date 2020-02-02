@@ -1,0 +1,25 @@
+#!/usr/bin/env rc
+
+fn spaces{
+	for (x in `{seq $1})
+		echo -n ' '
+}
+
+if (~ $#* 1) {
+    9 sed 's/^'^$1^'//'
+    exit
+}
+
+indent=`{9p read acme/$winid/indent >[2]/dev/null}
+
+# if Spaces is available and on use spaces for indention
+if (~ $#indent 3 && ~ $indent(2) 1) {
+	# if ifs contains ' ' n will be stripped
+	oifs=$ifs
+	ifs='
+	'
+	9 sed 's/^'^`{spaces $indent(3)}^'//'
+	ifs=$oifs
+}
+if not
+	9 sed 's/^	//'
