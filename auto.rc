@@ -5,8 +5,8 @@ fn msg{
 }
 
 fn read_shebang{
-	echo -n 0 | 9p write acme/$1/addr
-	9p read acme/$1/data
+	echo -n 0,1 | 9p write acme/$1/addr
+	9p read acme/$1/xdata
 }
 
 fn detect_python{
@@ -15,7 +15,7 @@ fn detect_python{
 
 	if(~ `{basename $file} *.py)
 		msg $id^': python-file detected (by file-extension)'
-	if not if(~ `{read_shebang $id} *python*)
+	if not if(~ `{read_shebang $id} '#'!/*python*)
 		msg $id^': python-file detected (by shebang)'
 	if not
 		status=nopython
@@ -35,10 +35,13 @@ fn indent_spaces{
 	action=$line(2)
 	file=$line(3)
 
+	ctl=`{9p read acme/$id/ctl}
+
 	echo $line
+
 	switch($action) {
 	case new
-		if (detect_python $id $file) {
+		if (~ $ctl(4) 0 && detect_python $id $file) {
 			indent_spaces $id
 		}
 	}
