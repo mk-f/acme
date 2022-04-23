@@ -17,29 +17,21 @@ SOL_CYAN="0x2AA198FF"
 SOL_GREEN="0x859900FF"
 SOL_GREEN="0x719e07FF" # experimental, vim theme
 
-# high contrast
-#    let s:base01      = s:base00
-#    let s:base00      = s:base0
-#    let s:base0       = s:base1
-#    let s:base1       = s:base2
-#    let s:base2       = s:base3
-
-
 # Dark
 BUTCOL=$SOL_BLUE
 BUTMOD=$SOL_MAGENTA
 
 TXTBG=$SOL_BASE03
 TXTFG=$SOL_BASE0
-TXTHLBG=$SOL_BASE02
-TXTHLFG=$SOL_BASE1
+TXTHLFG=$SOL_BASE03
+TXTHLBG=$SOL_YELLOW
 TXTBORD=$SOL_BASE02
 
 TAGBG=$SOL_BASE02
 TAGFG=$SOL_BASE1
-TAGHLBG=$SOL_BASE03
-TAGHLFG=$SOL_BASE0
+TAGHLBG=$TXTFG
+TAGHLFG=$TXTBG
 TAGBORD=$SOL_BASE03
 
-B2HL=$SOL_YELLOW
+B2HL="0xFF5245FF"
 B3HL=$SOL_GREEN
