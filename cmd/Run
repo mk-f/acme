@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Runs the selected text in the window found by searching a tag
+# which ends with ${1} but does not contain the name of this script
+# through /bin/sh.
+#
+# E.g.:
+#
+# [ /home/user/my_cmds.txt Del Snarf Get | Look +exec ]
+# ---
+# awk '{print NF, $0}' # selected text
+# ---
+#
+# [ /home/user/code.txt Del Snarf Get | Look >Run exec ]
+# ---
+# some text # selected text
+# ---
+#
+# will run the awk line with 'some text' as input from stdin
+#
+# if the tag which contains the name of this script starts with a
+# valid path $p, cd into dirname "$p"
+#
+# Original idea by Russ Cox:
+#
+# https://groups.google.com/g/comp.os.plan9/c/zesfmEKFh8s/m/CK06uCYmVQYJ
+#
+#
+#
+set -eu
+
+usage() {
+	printf >&2 'usage: %s <acme tag pattern>\n' "${0##*/}"
+	exit 2
+}
+
+die() {
+	printf >&2 'error: %s\n' "${1:?msg}"
+	exit 2
+}
+
+run() {
+	id=$(9p read acme/index | awk -v c="${0##*/}" -v p="${1}" \
+		-v c="${0##*/}" '$0 !~ c && $NF ~ p {print $1}')
+	set -- $id
+
+	[ $# -eq 0 ] && die 'pattern not found'
+	[ $# -ne 1 ] && die 'ambiguous pattern'
+
+	[ $(9p read "acme/${id}/rdsel" | wc -w) = "0" ] && die 'no selection'
+
+	p=$(9p read "acme/${winid}/tag" | awk '{print $1}')
+
+	[ -f "${p}" ] && p=${p%/*}
+	[ -d "${p}" ] && cd "${p}"
+
+	9p read "acme/${id}/rdsel" > "${TMPFILE}"
+	(exec /bin/sh "${TMPFILE}")
+}
+
+trap 'rm -rf "$TMPFILE"; trap - EXIT; exit' EXIT INT HUP TERM
+TMPFILE=$(mktemp)
+
+[ -z ${winid+x} ] && die 'run from within acme'
+run "${1:?tag pattern}" 
