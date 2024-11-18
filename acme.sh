@@ -25,6 +25,10 @@ pgrep -f -x "9pserve -u unix\!${NAMESPACE}/plumb" || \
 pgrep -f -x acmefocused || \
 	acmefocused &
 
+cmd="rc ${SCRIPT_DIR}/auto.rc"
+pgrep -f -x "${cmd}" || \
+	$cmd &
+
 
 if [ "${0##*/}" = "acmebright" ]; then
 . ${SCRIPT_DIR}/solarized-bright.theme
@@ -52,11 +56,11 @@ if [ "${0##*/}" = "acmedark" ] || [ "${0##*/}" = "acmebright" ]; then
 		"but3col:$B3HL")
 
 	SHELL=${PLAN9}/bin/rc $ACME -c 1 -a \
-			-f ${PLAN9}/font/terminus/unicode.18.font \
+			-f ${PLAN9}/font/fixed/unicode.9x18.font \
 			-t "$TEMPLATE" \
 			"$@" $GUIDE
 else
 	SHELL=${PLAN9}/bin/rc $ACME -c 1 -a \
-		-f ${PLAN9}/font/terminus/unicode.18.font \
+		-f ${PLAN9}/font/fixed/unicode.9x18.font \
 		"$@" $GUIDE
 fi

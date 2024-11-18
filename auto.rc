@@ -21,6 +21,16 @@ fn detect_python{
 		status=nopython
 }
 
+fn detect_markdown{
+	id=$1
+	file=$2
+
+	if(~ `{basename $file} *.md)
+		msg $id^': markdown detected (by file-extension)'
+	if not
+		status=nopython
+}
+
 fn indent_spaces{
 	if (echo spacesindent | 9p write acme/$1/ctl) {
 		echo -n Spaces on | 9p write acme/$1/tag
@@ -30,19 +40,41 @@ fn indent_spaces{
 		msg $id^': Spaces-Patch missing'
 }
 
-9p read acme/log | while (line=`{read}){
-	id=$line(1)
-	action=$line(2)
-	file=$line(3)
+fn set_tabstop{
+	if (echo 'tabstop '^$2 | 9p write acme/$1/ctl) {
+		msg $id^': set ''tabstop'' '^$2
+	}
+	if not
+		msg $id^': set ''tabstop'' failed'
+}
 
-	ctl=`{9p read acme/$id/ctl}
+fn update_tag{
+	printf '\n%s\n%s' 'win |a+ |a-' 'Edit' | 9p write acme/$1/tag
+}
 
-	echo $line
+while () {
+	9p read acme/log | while (line=`{read}){
+		id=$line(1)
+		action=$line(2)
+		file=$line(3)
 
-	switch($action) {
-	case new
-		if (~ $ctl(4) 0 && detect_python $id $file) {
-			indent_spaces $id
+		ctl=`{9p read acme/$id/ctl}
+
+		#echo $line
+
+		switch($action) {
+		case new
+			if (~ $ctl(4) 0) {
+				if (detect_python $id $file)
+					indent_spaces $id
+				if (detect_markdown $id $file) {
+					indent_spaces $id
+					set_tabstop $id 2
+				}
+
+			}
+			update_tag $id
 		}
 	}
+	sleep 1
 }
