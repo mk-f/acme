@@ -46,7 +46,7 @@ fn update_tag{
 }
 fn update_menu{
 	printf '%s\n' \
-		Put Get Zerox 'Edit =' '' Win '|a+' '|a-' '' 'Edit ,d'
+		Put Get Zerox 'Edit =' '' Win '|a+' '|a-' '' 'Edit ,d' '' 'rwmenu'
 }
 fn detect_filetype{
 	id=$1

@@ -1,0 +1,8 @@
+#!/usr/bin/env rc
+
+tmp=`{mktemp}
+9p read acme/$winid/rdmenu > $tmp
+editinacme $tmp
+echo >> $tmp
+cat $tmp | 9p write acme/$winid/wrmenu
+rm -f $tmp
