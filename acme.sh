@@ -12,6 +12,18 @@ _cleanup() {
 	pkill plumber;
 }
 
+DEBUG=0
+VALGRIND=
+while getopts :dv opt; do
+	case $opt in
+	d)	DEBUG=1;;
+	v)	VALGRIND="valgrind --leak-check=full";;
+	?)	usage;;
+	esac
+done
+
+shift $(($OPTIND - 1))
+
 command -v 9 && RUN9=9 || RUN9="${HOME}/src/plan9port/bin/9"
 
 PLAN9="${PLAN9:-${HOME}/src/plan9port}"
@@ -23,21 +35,34 @@ export PATH
 AUTO_RC="rc ${SCRIPT_DIR}/auto.rc"
 
 # Namespace superseeds DISPLAY
-NAMESPACE=/tmp/ns.acme.p9p export NAMESPACE
+if [ $DEBUG -eq 1 ]; then
+	NAMESPACE=/tmp/ns.acme.DEBUG.p9p
+else
+	NAMESPACE=/tmp/ns.acme.p9p
+fi
+
+export NAMESPACE
 mkdir -p "${NAMESPACE}"
 
 GUIDE=${SCRIPT_DIR}/guide
 
-pgrep -f -x "9pserve -u unix\!${NAMESPACE}/plumb" || \
-	${RUN9} plumber
+if [ $DEBUG -eq 1 ]; then
+	echo DEBUG >> /tmp/acme.debug
+	#valgrind --leak-check=full
+	${VALGRIND:+${VALGRIND}} "${PLAN9}/src/cmd/acme/o.acme" -c 1 -a \
+		-f ${PLAN9}/font/fixed/unicode.9x18.font \
+		"$@" /tmp/acme.debug
+else
+	pgrep -f -x "9pserve -u unix\!${NAMESPACE}/plumb" || \
+		${RUN9} plumber
 
-pgrep -f -x acmefocused || \
-	acmefocused &
+	pgrep -f -x acmefocused || \
+		acmefocused &
 
-pgrep -f -x "${AUTO_RC}" || \
-	${RUN9} $AUTO_RC &
+	pgrep -f -x "${AUTO_RC}" || \
+		${RUN9} $AUTO_RC &
 
-#SHELL='/usr/bin/rc' ${RUN9} acme -c 1 -a \
-${RUN9} acme -c 1 -a \
-	-f ${PLAN9}/font/fixed/unicode.9x18.font \
-	"$@" $GUIDE
+	${RUN9} acme -c 1 -a \
+		-f ${PLAN9}/font/fixed/unicode.9x18.font \
+		"$@" $GUIDE
+fi
