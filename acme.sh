@@ -51,7 +51,9 @@ if [ $DEBUG -eq 1 ]; then
 	#valgrind --leak-check=full
 	${VALGRIND:+${VALGRIND}} "${PLAN9}/src/cmd/acme/o.acme" -c 1 -a \
 		-f ${PLAN9}/font/fixed/unicode.9x18.font \
-		"$@" /tmp/acme.debug
+		"$@" /tmp/acme.debug &
+	while ! 9p ls acme >/dev/null 2>&1; do sleep 1; done
+	printf '%s\n' '' '|a+' '|a-' Edit Win Src | 9p write acme/1/wrmenu
 else
 	pgrep -f -x "9pserve -u unix\!${NAMESPACE}/plumb" || \
 		${RUN9} plumber
