@@ -1,0 +1,4 @@
+#!/usr/bin/env rc
+s=`{9p read acme/$winid/rdsel}
+rg -F -uu --vimgrep $s
+
