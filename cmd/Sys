@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+for x in $(echo $PATH | tr ':' ' '); do
+	case $x in
+		*plan9port*) continue;;
+	esac
+	p="${p+${p}:}${x}"
+done
+
+export PATH="$p"
+exec $@
