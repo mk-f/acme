@@ -1,0 +1,34 @@
+path=`:{echo -n $PATH}
+history=$home/.rc_history
+
+fn _prompt{
+	prompt='; ['^`{pwd}^']
+; '
+}
+fn cd {
+	if(builtin cd $1){
+		if(flag i) $PLAN9/bin/9 awd || status=''
+		_prompt
+		status=''
+	}
+
+}
+fn hc {
+	if(! ~ $#text9term 0){
+		nc -U `{echo $text9term | sed 's/.*!//'} | grep '^; [^[]' | \
+			grep -v '^; h$' | sed 's/^; //' | uniq
+	}
+}
+
+fn h {
+	if(test -f $history) cat $history
+	hc
+}
+fn lc {
+	9 lc -F $*
+}
+fn sigexit {
+	hc >> $home/.rc_history
+}
+_prompt
+

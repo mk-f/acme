@@ -1,3 +1,2 @@
 #!/usr/bin/env rc
-
 9 win rc -l $*
